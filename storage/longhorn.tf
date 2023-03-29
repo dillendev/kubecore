@@ -5,6 +5,7 @@ resource "kubernetes_namespace" "longhorn-system" {
 }
 
 resource "kubectl_manifest" "longhorn-basic-auth" {
+  count      = var.longhorn.dashboard.enabled ? 1 : 0
   depends_on = [kubernetes_namespace.longhorn-system]
   yaml_body = yamlencode({
     apiVersion = "onepassword.com/v1"
@@ -21,6 +22,7 @@ resource "kubectl_manifest" "longhorn-basic-auth" {
 
 # TODO: abstract secret creation
 resource "kubectl_manifest" "longhorn-s3-credentials" {
+  count      = var.backup.enabled ? 1 : 0
   depends_on = [kubernetes_namespace.longhorn-system]
   yaml_body = yamlencode({
     apiVersion = "onepassword.com/v1"
@@ -49,7 +51,7 @@ resource "helm_release" "longhorn" {
 
   set {
     name  = "ingress.enabled"
-    value = true
+    value = var.longhorn.dashboard.enabled
   }
 
   set {
@@ -99,7 +101,7 @@ resource "helm_release" "longhorn" {
 
   set {
     name  = "persistence.defaultClassReplicaCount"
-    value = 3
+    value = var.longhorn.replica_count
   }
 
   dynamic "set" {
