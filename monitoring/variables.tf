@@ -3,7 +3,4 @@ variable "metrics" {
     chart_version = string
     enabled       = bool
   })
-  default = {
-    enabled = false
-  }
 }
